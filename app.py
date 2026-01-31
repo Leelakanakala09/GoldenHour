@@ -28,11 +28,15 @@ def init_state():
 
 init_state()
 
-# ---------------- RESET HANDLER ----------------
+# ---------------- SAFE RESET HANDLER (DO NOT TOUCH) ----------------
 if st.session_state.reset_trigger:
     st.session_state.all_symptoms = []
     st.session_state.ui_selected = []
     st.session_state.voice_text = ""
+
+    # SAFE reset for radio widget
+    st.session_state.pop("user_role", None)
+
     st.session_state.reset_trigger = False
     st.rerun()
 
@@ -57,6 +61,7 @@ def maps_link(level="normal"):
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
+st.divider()
 
 # ---------------- ROLE SELECTION ----------------
 st.write("## Who is using this website?")
@@ -174,23 +179,10 @@ if st.session_state.user_role:
     else:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
-        # ---------------- START NEW EMERGENCY ----------------
+
+# ---------------- START NEW EMERGENCY (SAFE) ----------------
 st.divider()
 
 if st.button("🔄 Start New Emergency"):
-    st.session_state.all_symptoms = []
-    st.session_state.ui_selected = []
-    st.session_state.voice_text = ""
-    st.session_state.user_role = None
-    st.session_state.reset_trigger = False
+    st.session_state.reset_trigger = True
     st.rerun()
-
-# ---------------- SAFE IMAGE LOAD ----------------
-IMAGE_PATH = "assets/goldenhour.png"
-
-if os.path.exists(IMAGE_PATH):
-    st.image(IMAGE_PATH, use_column_width=True)
-else:
-    st.warning("⚠️ Banner image not found. (assets/goldenhour.png)")
-
-st.divider()
