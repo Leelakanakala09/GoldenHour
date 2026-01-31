@@ -68,7 +68,7 @@ st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 st.divider()
 
-# ================= LAYOUT CHANGE (ONLY THIS PART) =================
+# ================= RIGHT SIDE IMAGE + ROLE SELECTION =================
 left_space, right_panel = st.columns([2, 1])
 
 with right_panel:
@@ -99,6 +99,7 @@ if st.session_state.user_role:
 
     main, side = st.columns([3, 1])
 
+    # -------- MAIN --------
     with main:
         st.write("### Select symptoms")
         selected = st.multiselect(
@@ -141,6 +142,7 @@ if st.session_state.user_role:
             if st.form_submit_button("Add Voice") and voice_input.strip():
                 add_symptoms(split_text(voice_input))
 
+    # -------- SIDEBAR --------
     with side:
         st.write("### 📋 Reported Symptoms")
         if st.session_state.all_symptoms:
@@ -149,6 +151,7 @@ if st.session_state.user_role:
         else:
             st.info("No symptoms added yet")
 
+    # -------- SEVERITY --------
     if not st.session_state.all_symptoms:
         st.warning("Please add at least one symptom.")
         st.stop()
