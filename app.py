@@ -108,15 +108,14 @@ st.radio(
     on_change=update_activity
 )
 
-# ---------------- IMAGE (ONLY AT START) ----------------
-if st.session_state.user_role is None:
-    st.divider()
-    IMAGE_PATH = "assets/goldenhour.jpg"
+# ---------------- IMAGE (ONLY BEFORE SYMPTOMS) ----------------
+if len(st.session_state.all_symptoms) == 0:
+    IMAGE_PATH = "golden_hour...jpg"  # ✅ correct filename
     if os.path.exists(IMAGE_PATH):
         st.image(
             IMAGE_PATH,
             caption="⏱️ The Golden Hour – Immediate action saves lives",
-            use_column_width=True
+            width=900
         )
     st.divider()
 
