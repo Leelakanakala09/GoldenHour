@@ -185,7 +185,7 @@ if st.session_state.user_role:
 
 # ---------------- FOOTER IMAGE ----------------
 st.divider()
-IMAGE_PATH = "goldenhour.png"
+IMAGE_PATH = "goldenhour.jpg"
 
 if os.path.exists(IMAGE_PATH):
     st.image(
