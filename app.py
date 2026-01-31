@@ -194,3 +194,10 @@ try:
 except Exception as e:
     st.warning("⚠️ Image could not be loaded")
     st.text(str(e))
+# ---------------- FOOTER IMAGE (GOLDEN HOUR) ----------------
+st.divider()
+st.image(
+    "/mnt/data/5e55c10d-0eee-4360-a2d0-aa48501aa2f8.png",
+    caption="⏱️ The Golden Hour – Immediate action saves lives",
+    use_column_width=True
+)
