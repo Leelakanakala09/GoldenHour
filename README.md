@@ -13,7 +13,7 @@ This system focuses only on **trauma emergencies**:
 - Unconscious patients
 
 ## Features
-- Emergency severity classification
+- Emergency severity classification 
 - Immediate action guidance
 - Panic Mode for high-stress situations
 - Trauma hospital recommendation
