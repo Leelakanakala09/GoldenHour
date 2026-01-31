@@ -62,7 +62,7 @@ def explain_severity(symptoms, severity):
         return (
             "⚠️ **Why this is severe?**\n\n"
             f"The selected symptom(s) **{', '.join(matched)}** are commonly associated "
-            "with potentially life-threatening conditions requiring immediate medical care."
+            "with potentially life-threatening conditions that require immediate care."
         )
 
     return (
@@ -79,11 +79,9 @@ def ai_free_chat(question, symptoms, severity, role):
         return f"Based on **{symptom_text}**, this case is classified as **{severity}**."
 
     if any(x in q for x in ["what should", "what to do", "next"]):
-        return (
-            "Call emergency services immediately."
-            if severity == "Severe"
-            else "Consult a doctor soon and monitor symptoms carefully."
-        )
+        if severity == "Severe":
+            return "You should immediately call emergency services and go to the nearest trauma hospital."
+        return "You should consult a doctor soon and monitor symptoms carefully."
 
     if "cpr" in q or "first aid" in q:
         return "CPR should only be performed if the patient is unresponsive and not breathing normally."
@@ -92,15 +90,16 @@ def ai_free_chat(question, symptoms, severity, role):
         return "Use the hospital locator above to find nearby facilities."
 
     if role == "👥 I am helping someone else":
-        return "Ensure your safety, avoid moving the patient unnecessarily, and follow emergency instructions."
+        return "Ensure safety, avoid moving the patient unnecessarily, and follow emergency instructions."
 
-    return "Please monitor symptoms closely and seek medical help if they worsen."
+    return "Please monitor symptoms closely and seek medical help if the condition worsens."
 
-# ================= HEADER =================
+# ---------------- HEADER ----------------
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
-# ✅ IMAGE AT START (ONLY PLACE IT APPEARS)
+# ---------------- IMAGE AT START (ONLY HERE) ----------------
+st.divider()
 IMAGE_PATH = "assets/goldenhour.jpg"
 if os.path.exists(IMAGE_PATH):
     st.image(
@@ -168,6 +167,7 @@ if st.session_state.user_role:
         add_symptoms(selected)
 
         st.divider()
+        st.write("### ➕ How do you want to add symptoms?")
         st.radio("", ["✍️ Add via Text", "🎙️ Add via Voice"], key="input_mode", horizontal=True)
 
         if st.session_state.input_mode == "✍️ Add via Text":
@@ -205,7 +205,6 @@ if st.session_state.user_role:
     if not st.session_state.all_symptoms:
         st.stop()
 
-    # ---------------- SEVERITY ----------------
     severity = "Urgent"
     for s in st.session_state.all_symptoms:
         if classify_severity(s) == "Severe":
