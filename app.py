@@ -1,9 +1,8 @@
 import streamlit as st
-from emergency_data import classify_severity
 import speech_recognition as sr
-import tempfile
-import os
+import tempfile, os
 from audio_recorder_streamlit import audio_recorder
+from emergency_data import classify_severity
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Golden Hour", layout="centered")
@@ -12,79 +11,53 @@ st.set_page_config(page_title="Golden Hour", layout="centered")
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 st.write("Get instant guidance during medical emergencies.")
-
 st.divider()
 
 # ---------------- SESSION STATE ----------------
-if "all_options" not in st.session_state:
-    st.session_state.all_options = [
-        "Road Accident",
-        "Heavy Bleeding",
-        "Chest Pain",
-        "Breathing Problem",
-        "Burn Injury",
-        "Fever",
-        "Headache",
-        "Stomach Ache",
-        "Dizziness"
-    ]
-
-if "selected_problems" not in st.session_state:
-    st.session_state.selected_problems = []
-
-if "custom_input" not in st.session_state:
-    st.session_state.custom_input = ""
-
-if "voice_text" not in st.session_state:
-    st.session_state.voice_text = ""
+st.session_state.setdefault("all_options", [
+    "Road Accident", "Heavy Bleeding", "Chest Pain",
+    "Breathing Problem", "Burn Injury", "Fever",
+    "Headache", "Stomach Ache", "Dizziness"
+])
+st.session_state.setdefault("selected_problems", [])
+st.session_state.setdefault("custom_input", "")
+st.session_state.setdefault("voice_text", "")
 
 # ---------------- HELPERS ----------------
 def normalize_and_split(text):
-    separators = [" and ", ",", "&"]
-    items = [text.lower()]
-    for sep in separators:
-        items = sum([i.split(sep) for i in items], [])
-    return [i.strip().title() for i in items if i.strip()]
+    for sep in [" and ", ",", "&"]:
+        text = text.replace(sep, "|")
+    return [i.strip().title() for i in text.split("|") if i.strip()]
 
-# ---------------- ADD FUNCTIONS ----------------
-def add_problems_from_text(text):
-    problems = normalize_and_split(text)
-    for p in problems:
+def add_problems(text):
+    for p in normalize_and_split(text):
         if p not in st.session_state.all_options:
             st.session_state.all_options.append(p)
         if p not in st.session_state.selected_problems:
             st.session_state.selected_problems.append(p)
 
 # ---------------- PROBLEM SELECTION ----------------
-st.write("## What is the emergency? (Select all that apply)")
-
+st.write("## What is the emergency?")
 st.multiselect(
-    "",
-    options=st.session_state.all_options,
-    key="selected_problems",
+    "Select all that apply",
+    st.session_state.all_options,
+    key="selected_problems"
 )
 
 # ---------------- TEXT INPUT ----------------
-if st.text_input(
-    "➕ Add your problem (type & press Enter)",
-    key="custom_input",
-    placeholder="Example: fever and headache",
-):
-    add_problems_from_text(st.session_state.custom_input)
-    st.session_state.custom_input = ""
-    st.rerun()
+col1, col2 = st.columns([3, 1])
+with col1:
+    user_text = st.text_input("➕ Add your problem", placeholder="fever and headache")
+with col2:
+    if st.button("Add Text"):
+        add_problems(user_text)
+        st.rerun()
 
 # ---------------- VOICE INPUT ----------------
 st.divider()
-st.write("🎙️ Or describe the problem using voice")
+st.write("🎙️ Describe the problem using voice")
 
-audio_bytes = audio_recorder(
-    text="Click to record",
-    recording_color="#e74c3c",
-    neutral_color="#2c3e50",
-    icon_name="microphone",
-    icon_size="2x",
-)
+audio_bytes = audio_recorder("Click to record")
 
 if audio_bytes:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
@@ -97,76 +70,48 @@ if audio_bytes:
 
     try:
         st.session_state.voice_text = recognizer.recognize_google(audio)
-    except:
-        st.error("Could not recognize speech")
+    except sr.UnknownValueError:
+        st.error("Could not understand the audio")
+    finally:
+        os.remove(audio_path)
 
-    os.remove(audio_path)
-
-# ---------------- VOICE CONFIRM ----------------
-col1, col2 = st.columns([3, 1])
-
-with col1:
-    st.text_input(
-        "📝 Recognized problem (edit if needed)",
-        key="voice_text",
-        placeholder="e.g. fever and headache",
-    )
-
-with col2:
-    if st.button("➕ Add"):
-        add_problems_from_text(st.session_state.voice_text)
-        st.session_state.pop("voice_text", None)
+if st.session_state.voice_text:
+    if st.button("➕ Add Voice Input"):
+        add_problems(st.session_state.voice_text)
+        st.session_state.voice_text = ""
         st.rerun()
 
-# ---------------- STOP IF EMPTY ----------------
-if len(st.session_state.selected_problems) == 0:
-    st.info("Please select, type, or speak at least one problem.")
+# ---------------- VALIDATION ----------------
+if not st.session_state.selected_problems:
+    st.info("Please report at least one problem.")
     st.stop()
 
-st.divider()
-
-# ---------------- SEVERITY DECISION ----------------
+# ---------------- SEVERITY CHECK ----------------
 severity = "Urgent"
-for problem in st.session_state.selected_problems:
-    if classify_severity(problem) == "Severe":
+for p in st.session_state.selected_problems:
+    if classify_severity(p) == "Severe":
         severity = "Severe"
         break
 
-# ---------------- MAPS LINK ----------------
-def get_maps_link(level):
-    query = "trauma hospital near me" if level == "Severe" else "hospital near me"
-    return f"https://www.google.com/maps/search/{query.replace(' ', '+')}"
+def maps_link(level):
+    q = "trauma hospital near me" if level == "Severe" else "hospital near me"
+    return f"https://www.google.com/maps/search/{q.replace(' ', '+')}"
 
-maps_link = get_maps_link(severity)
+# ---------------- OUTPUT ----------------
+st.divider()
 
-# ---------------- SEVERE FLOW ----------------
 if severity == "Severe":
     st.error("🔴 SEVERE EMERGENCY")
-
-    st.write("### Immediate Actions:")
     st.write("📞 Call emergency services immediately")
-    st.write("🩸 Provide basic first aid if possible")
-    st.write("🏥 Go to the nearest trauma hospital")
+    st.write("🩸 Provide first aid")
+    st.write("🏥 Reach nearest trauma hospital")
+    st.markdown(f"[🧭 Find Trauma Hospitals]({maps_link(severity)})")
 
-    st.markdown(f"[🧭 View Nearby Trauma Hospitals]({maps_link})")
-
-    if st.button("🚨 PANIC MODE"):
-        st.error("EMERGENCY MODE ACTIVATED")
-        st.write("📢 CALL AMBULANCE NOW")
-        st.write("🩸 APPLY PRESSURE / BASIC FIRST AID")
-        st.write("🚑 DO NOT DELAY HOSPITAL VISIT")
-
-# ---------------- URGENT FLOW ----------------
 else:
-    st.warning("🟠 URGENT — MEDICAL ATTENTION NEEDED")
+    st.warning("🟠 URGENT MEDICAL ATTENTION NEEDED")
+    st.write("🏥 Visit a nearby clinic")
+    st.markdown(f"[🧭 Find Hospitals]({maps_link(severity)})")
 
-    st.write("### Recommended Actions:")
-    st.write("🏥 Contact a nearby hospital or clinic")
-    st.write("👩‍⚕️ Consult a medical professional")
-
-    st.markdown(f"[🧭 View Nearby Hospitals]({maps_link})")
-
-# ---------------- DISPLAY ----------------
 st.divider()
 st.write("### Reported Problems:")
 for p in st.session_state.selected_problems:
