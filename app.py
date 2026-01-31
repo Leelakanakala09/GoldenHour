@@ -36,7 +36,7 @@ if st.session_state.reset_trigger:
     st.session_state.reset_trigger = False
     st.rerun()
 
-# ---------------- HELPERS ----------------
+# ---------------- HELPER FUNCTIONS ----------------
 def split_text(text):
     for sep in [",", "&", " and "]:
         text = text.replace(sep, "|")
@@ -57,7 +57,7 @@ def maps_link(level="normal"):
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
-# 🔥 IMAGE LINK (THIS IS WHAT YOU WANTED)
+# ✅ IMAGE (FIXED PATH – NO SPACE)
 st.image("assets/golden_hour.png", use_column_width=True)
 
 st.divider()
@@ -70,7 +70,7 @@ st.radio(
     key="user_role"
 )
 
-# ---------------- HELPER GUIDELINES FIRST ----------------
+# ---------------- HELPER GUIDELINES ----------------
 if st.session_state.user_role == "👥 I am helping someone else":
     st.divider()
     st.info("👥 **Helper Safety & First-Aid Guidelines**")
@@ -92,12 +92,12 @@ if st.session_state.user_role == "👥 I am helping someone else":
     st.divider()
     st.success("⬇️ Now report the patient’s symptoms below")
 
-# ================= SYMPTOM FLOW (BOTH ROLES) =================
+# ================= SYMPTOMS (PATIENT + HELPER) =================
 if st.session_state.user_role:
 
     main, side = st.columns([3, 1])
 
-    # -------- MAIN --------
+    # -------- MAIN COLUMN --------
     with main:
         st.write("### Select symptoms")
         selected = st.multiselect(
@@ -178,4 +178,3 @@ if st.session_state.user_role:
     else:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
-
