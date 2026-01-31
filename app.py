@@ -117,16 +117,7 @@ with side:
             st.success(s)
     else:
         st.info("No symptoms added yet")
-        # ================= SIDEBAR =================
-with side:
-    st.write("### 📋 All Added Symptoms")
-
-    if st.session_state.all_symptoms:
-        for s in st.session_state.all_symptoms:
-            st.success(s)
-    else:
-        st.info("No symptoms added yet")
-
+ 
     st.divider()
 
     # -------- RESET BUTTON --------
