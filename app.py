@@ -175,12 +175,14 @@ if st.session_state.user_role:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
         # ---------------- SAFE IMAGE LOAD ----------------
+
+# ---------------- IMAGE AT END ----------------
+st.divider()
+
 IMAGE_PATH = "assets/goldenhour.png"
 
 if os.path.exists(IMAGE_PATH):
     st.image(IMAGE_PATH, use_column_width=True)
 else:
     st.warning("⚠️ Banner image not found. (assets/goldenhour.png)")
-
-st.divider()
 
