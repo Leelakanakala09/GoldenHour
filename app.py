@@ -226,7 +226,7 @@ if st.session_state.user_role:
                 st.session_state.user_role
             ))
  # ---------------- IMAGE (ONLY BEFORE SYMPTOMS) ----------------
- if len(st.session_state.all_symptoms) == 0:
+if len(st.session_state.all_symptoms) == 0:
     IMAGE_PATH = "assets/goldenhour.jpg"  # ✅ correct filename
     if os.path.exists(IMAGE_PATH):
         st.image(
