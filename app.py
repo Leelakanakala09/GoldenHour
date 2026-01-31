@@ -50,6 +50,31 @@ def add_symptoms(items):
 def maps_link(level="normal"):
     query = "trauma hospital near me" if level == "severe" else "hospital near me"
     return f"https://www.google.com/maps/search/{query.replace(' ', '+')}"
+    def explain_severity(symptoms, severity):
+    severe_indicators = [
+        "Chest Pain",
+        "Breathing Problem",
+        "Heavy Bleeding",
+        "Road Accident",
+        "Burn Injury"
+    ]
+
+    matched = [s for s in symptoms if s in severe_indicators]
+
+    if severity == "Severe" and matched:
+        return (
+            "⚠️ **Why this is severe?**\n\n"
+            "Based on the selected symptom(s): "
+            f"**{', '.join(matched)}**, which are commonly associated with "
+            "possible life-threatening conditions requiring immediate medical attention."
+        )
+
+    return (
+        "ℹ️ **Why this is urgent?**\n\n"
+        "The selected symptoms do not immediately indicate life-threatening trauma, "
+        "but still require prompt medical evaluation to prevent complications."
+    )
+
 
 # ---------------- HEADER ----------------
 st.title("🚨 Golden Hour")
@@ -211,6 +236,16 @@ if st.session_state.user_role:
     else:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
+        if severity == "Severe":
+    st.error("🔴 SEVERE EMERGENCY")
+    st.markdown(f"[🧭 Find Trauma Hospitals]({maps_link('severe')})")
+else:
+    st.warning("🟠 MEDICAL ATTENTION ADVISED")
+    st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
+st.info(
+    explain_severity(st.session_state.all_symptoms, severity)
+)
+
 
 # ---------------- PATIENT EMERGENCY CALL ----------------
 if st.session_state.user_role == "👤 I am the patient":
