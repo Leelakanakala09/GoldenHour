@@ -58,12 +58,12 @@ st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
 # ---------------- SAFE IMAGE LOAD ----------------
-IMAGE_PATH = "assets/golden_hour.png"
+IMAGE_PATH = "assets/goldenhour.png"
 
 if os.path.exists(IMAGE_PATH):
     st.image(IMAGE_PATH, use_column_width=True)
 else:
-    st.warning("⚠️ Banner image not found. (assets/golden_hour.png)")
+    st.warning("⚠️ Banner image not found. (assets/goldenhour.png)")
 
 st.divider()
 
