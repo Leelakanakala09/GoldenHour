@@ -97,17 +97,6 @@ def ai_free_chat(question, symptoms, severity, role):
 # ---------------- HEADER ----------------
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
-
-# ---------------- IMAGE AT START (ONLY HERE) ----------------
-st.divider()
-IMAGE_PATH = "assets/goldenhour.jpg"
-if os.path.exists(IMAGE_PATH):
-    st.image(
-        IMAGE_PATH,
-        caption="⏱️ The Golden Hour – Immediate action saves lives",
-        use_column_width=True
-    )
-
 st.divider()
 
 # ---------------- ROLE SELECTION ----------------
@@ -118,6 +107,18 @@ st.radio(
     key="user_role",
     on_change=update_activity
 )
+
+# ---------------- IMAGE (ONLY AT START) ----------------
+if st.session_state.user_role is None:
+    st.divider()
+    IMAGE_PATH = "assets/goldenhour.jpg"
+    if os.path.exists(IMAGE_PATH):
+        st.image(
+            IMAGE_PATH,
+            caption="⏱️ The Golden Hour – Immediate action saves lives",
+            use_column_width=True
+        )
+    st.divider()
 
 # ---------------- HELPER GUIDELINES ----------------
 if st.session_state.user_role == "👥 I am helping someone else":
@@ -221,10 +222,8 @@ if st.session_state.user_role:
 
     st.info(explain_severity(st.session_state.all_symptoms, severity))
 
-    # ---------------- AI CHAT ----------------
     st.divider()
     st.markdown("### 💬 AI Emergency Assistant")
-
     question = st.chat_input("Ask anything about the emergency…")
     if question:
         with st.chat_message("user"):
@@ -236,22 +235,6 @@ if st.session_state.user_role:
                 severity,
                 st.session_state.user_role
             ))
-
-# ---------------- PATIENT CALL ----------------
-if st.session_state.user_role == "👤 I am the patient":
-    st.divider()
-    st.error("📞 If you are in immediate danger, contact emergency services now.")
-    st.markdown(
-        """
-        <a href="tel:108">
-            <button style="background:#ff4b4b;color:white;padding:16px 32px;
-            border:none;border-radius:12px;font-size:20px;">
-                📞 Call 108 (Emergency)
-            </button>
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
 
 # ---------------- RESET ----------------
 st.divider()
