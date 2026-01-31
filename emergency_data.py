@@ -1,18 +1,11 @@
 def classify_severity(emergency):
-    severe = [
+    severe_cases = [
         "Road Accident",
         "Heavy Bleeding",
-        "Chest Pain",
-        "Breathing Problem"
+        "Unconscious Person"
     ]
 
-    urgent = [
-        "Burn Injury"
-    ]
-
-    if emergency in severe:
+    if emergency in severe_cases:
         return "Severe"
-    elif emergency in urgent:
-        return "Urgent"
     else:
         return "Urgent"
