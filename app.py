@@ -50,7 +50,8 @@ def add_symptoms(items):
 def maps_link(level="normal"):
     query = "trauma hospital near me" if level == "severe" else "hospital near me"
     return f"https://www.google.com/maps/search/{query.replace(' ', '+')}"
-    def explain_severity(symptoms, severity):
+
+def explain_severity(symptoms, severity):
     severe_indicators = [
         "Chest Pain",
         "Breathing Problem",
@@ -65,16 +66,15 @@ def maps_link(level="normal"):
         return (
             "⚠️ **Why this is severe?**\n\n"
             "Based on the selected symptom(s): "
-            f"**{', '.join(matched)}**, which are commonly associated with "
-            "possible life-threatening conditions requiring immediate medical attention."
+            f"**{', '.join(matched)}**, which may indicate "
+            "life-threatening trauma requiring immediate medical attention."
         )
 
     return (
         "ℹ️ **Why this is urgent?**\n\n"
         "The selected symptoms do not immediately indicate life-threatening trauma, "
-        "but still require prompt medical evaluation to prevent complications."
+        "but still require prompt medical evaluation."
     )
-
 
 # ---------------- HEADER ----------------
 st.title("🚨 Golden Hour")
@@ -93,7 +93,6 @@ st.radio(
 # ---------------- HELPER GUIDELINES ----------------
 if st.session_state.user_role == "👥 I am helping someone else":
     st.markdown("## 🛟 Helper Safety & First-Aid Guidelines")
-
     st.info("⚠️ Your safety comes first. Stay calm and act quickly.")
 
     col1, col2 = st.columns(2)
@@ -109,19 +108,16 @@ if st.session_state.user_role == "👥 I am helping someone else":
         st.markdown("🩸 Apply firm pressure if there is bleeding")
         st.markdown("❤️ **Learn CPR:** [Watch CPR Video](https://youtu.be/2PngCv7NjaI)")
 
-
     st.markdown("---")
-
     st.markdown(
         """
         🚑 **Emergency Action**
-        - 📞 Call emergency services immediately
-        - 🗣️ Speak clearly and follow instructions
+        - 📞 Call emergency services immediately  
+        - 🗣️ Speak clearly and follow instructions  
         - ⏱️ Every second matters during the *Golden Hour*
         """
     )
 
-    # 🔴 CALL 108 (HELPER)
     st.markdown(
         """
         <a href="tel:108" style="text-decoration:none;">
@@ -133,7 +129,6 @@ if st.session_state.user_role == "👥 I am helping someone else":
                 border:none;
                 border-radius:10px;
                 cursor:pointer;
-                margin-top:10px;
             ">
                 📞 Call 108 Now
             </button>
@@ -145,7 +140,7 @@ if st.session_state.user_role == "👥 I am helping someone else":
     st.success("⬇️ Now, please report the patient’s symptoms")
     st.divider()
 
-# ---------------- SYMPTOMS SECTION ----------------
+# ---------------- SYMPTOMS ----------------
 if st.session_state.user_role:
 
     main, side = st.columns([3, 1])
@@ -163,7 +158,6 @@ if st.session_state.user_role:
 
         st.divider()
         st.write("### ➕ How do you want to add symptoms?")
-
         st.radio(
             "",
             ["✍️ Add via Text", "🎙️ Add via Voice"],
@@ -171,7 +165,6 @@ if st.session_state.user_role:
             horizontal=True
         )
 
-        # -------- ADD VIA TEXT --------
         if st.session_state.input_mode == "✍️ Add via Text":
             with st.form("text_form", clear_on_submit=True):
                 text_input = st.text_input(
@@ -181,11 +174,8 @@ if st.session_state.user_role:
                 if st.form_submit_button("Add Text") and text_input.strip():
                     add_symptoms(split_text(text_input))
 
-        # -------- ADD VIA VOICE --------
         if st.session_state.input_mode == "🎙️ Add via Voice":
-            st.write("🎤 Click to record")
             audio_bytes = audio_recorder("")
-
             if audio_bytes:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
                     f.write(audio_bytes)
@@ -236,27 +226,17 @@ if st.session_state.user_role:
     else:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
-        if severity == "Severe":
-    st.error("🔴 SEVERE EMERGENCY")
-    st.markdown(f"[🧭 Find Trauma Hospitals]({maps_link('severe')})")
-else:
-    st.warning("🟠 MEDICAL ATTENTION ADVISED")
-    st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
-st.info(
-    explain_severity(st.session_state.all_symptoms, severity)
-)
 
+    # ✅ Explainable AI box
+    st.info(explain_severity(st.session_state.all_symptoms, severity))
 
-# ---------------- PATIENT EMERGENCY CALL ----------------
+# ---------------- PATIENT CALL ----------------
 if st.session_state.user_role == "👤 I am the patient":
     st.divider()
-    st.markdown("## 🚨 Emergency Contact")
-
     st.error("📞 If you are in immediate danger, contact emergency services now.")
-
     st.markdown(
         """
-        <a href="tel:108" style="text-decoration:none;">
+        <a href="tel:108">
             <button style="
                 background-color:#ff4b4b;
                 color:white;
@@ -276,13 +256,12 @@ if st.session_state.user_role == "👤 I am the patient":
 # ---------------- FOOTER IMAGE ----------------
 st.divider()
 IMAGE_PATH = "assets/goldenhour.jpg"
-   # make sure this file exists in same folder as app.py
 
 if os.path.exists(IMAGE_PATH):
     st.image(
         IMAGE_PATH,
         caption="⏱️ The Golden Hour – Immediate action saves lives",
-        width=900
+        use_column_width=True
     )
 
 # ---------------- RESET ----------------
