@@ -28,15 +28,12 @@ def init_state():
 
 init_state()
 
-# ---------------- SAFE RESET HANDLER (DO NOT TOUCH) ----------------
+# ---------------- SAFE RESET HANDLER ----------------
 if st.session_state.reset_trigger:
     st.session_state.all_symptoms = []
     st.session_state.ui_selected = []
     st.session_state.voice_text = ""
-
-    # SAFE reset for radio widget
-    st.session_state.pop("user_role", None)
-
+    st.session_state.pop("user_role", None)  # SAFE reset for radio
     st.session_state.reset_trigger = False
     st.rerun()
 
@@ -61,6 +58,11 @@ def maps_link(level="normal"):
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
+# ---------------- IMAGE (SAME LOGIC) ----------------
+IMAGE_PATH = "goldenhour.png"
+if os.path.exists(IMAGE_PATH):
+    st.image(IMAGE_PATH, use_column_width=True)
+
 st.divider()
 
 # ---------------- ROLE SELECTION ----------------
@@ -73,25 +75,14 @@ st.radio(
 
 # ---------------- HELPER GUIDELINES ----------------
 if st.session_state.user_role == "👥 I am helping someone else":
-    st.divider()
     st.info("👥 **Helper Safety & First-Aid Guidelines**")
-
-    st.write("### 🛡️ Ensure Safety")
-    st.write("• Make sure the area is safe for you")
-    st.write("• Do not put yourself in danger")
-
-    st.write("### 🩺 Immediate First Aid")
+    st.write("• Ensure the area is safe")
     st.write("• Do NOT move the patient unnecessarily")
-    st.write("• Apply pressure to stop heavy bleeding")
+    st.write("• Apply pressure if bleeding")
     st.write("• Check breathing and responsiveness")
-    st.write("• Keep the patient calm and warm")
-
-    st.write("### 📞 Emergency Action")
     st.write("• Call emergency services immediately")
-    st.write("• Stay with the patient until help arrives")
-
     st.divider()
-    st.success("⬇️ Now report the patient’s symptoms below")
+    st.success("⬇️ Now report the patient’s symptoms")
 
 # ================= SYMPTOMS (PATIENT + HELPER) =================
 if st.session_state.user_role:
@@ -111,10 +102,7 @@ if st.session_state.user_role:
 
         st.write("### ➕ Add via text")
         with st.form("text_form", clear_on_submit=True):
-            text_input = st.text_input(
-                "",
-                placeholder="fever, headache and dizziness"
-            )
+            text_input = st.text_input("", placeholder="fever, headache and dizziness")
             if st.form_submit_button("Add Text") and text_input.strip():
                 add_symptoms(split_text(text_input))
 
@@ -138,10 +126,7 @@ if st.session_state.user_role:
                 os.remove(audio_path)
 
         with st.form("voice_form", clear_on_submit=True):
-            voice_input = st.text_input(
-                "📝 Recognized voice",
-                value=st.session_state.voice_text
-            )
+            voice_input = st.text_input("📝 Recognized voice", value=st.session_state.voice_text)
             if st.form_submit_button("Add Voice") and voice_input.strip():
                 add_symptoms(split_text(voice_input))
 
@@ -153,11 +138,6 @@ if st.session_state.user_role:
                 st.success(s)
         else:
             st.info("No symptoms added yet")
-
-        st.divider()
-        if st.button("🗑️ Reset All Symptoms"):
-            st.session_state.reset_trigger = True
-            st.rerun()
 
     # -------- SEVERITY --------
     if not st.session_state.all_symptoms:
@@ -180,9 +160,8 @@ if st.session_state.user_role:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
 
-# ---------------- START NEW EMERGENCY (SAFE) ----------------
-st.divider()
-
-if st.button("🔄 Start New Emergency"):
-    st.session_state.reset_trigger = True
-    st.rerun()
+    # ---------------- START NEW EMERGENCY (LAST ONLY) ----------------
+    st.divider()
+    if st.button("🔄 Start New Emergency"):
+        st.session_state.reset_trigger = True
+        st.rerun()
