@@ -72,23 +72,20 @@ def explain_severity(symptoms, severity):
     )
 
 # ---------------- AI CHAT ----------------
-def ai_free_chat(question, symptoms, severity, role, age):
+def ai_free_chat(question, symptoms, severity, role):
     q = question.lower()
     symptom_text = ", ".join(symptoms) if symptoms else "the reported symptoms"
 
-    if "age" in q:
-        return f"The patient is classified as **{age}**. Age can influence risk levels and recovery."
+    if "severe" in q or "danger" in q:
+        return f"Based on **{symptom_text}**, this situation is classified as **{severity}**."
 
-    if any(x in q for x in ["severe", "danger"]):
-        return f"Based on **{symptom_text}**, the condition is **{severity}**."
-
-    if "what to do" in q or "next" in q:
-        return "Call emergency services immediately if symptoms worsen."
+    if "what should" in q or "next" in q:
+        return "Call emergency services immediately." if severity == "Severe" else "Consult a doctor soon."
 
     if "cpr" in q:
-        return "Perform CPR only if the patient is unresponsive and not breathing normally."
+        return "CPR should be performed only if the patient is unresponsive and not breathing."
 
-    return "I’m here to help. Please ask anything related to the emergency."
+    return "I’m here to help. Please continue monitoring and seek medical help if symptoms worsen."
 
 # ---------------- HEADER (CENTERED) ----------------
 st.markdown(
@@ -100,13 +97,12 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 st.divider()
 
 # ---------------- ROLE + AGE SELECTION ----------------
-left, right = st.columns([3, 2])
+left_col, right_col = st.columns([3, 2])
 
-with left:
+with left_col:
     st.write("## Who is using this website?")
     st.radio(
         "",
@@ -115,13 +111,23 @@ with left:
         on_change=update_activity
     )
 
-with right:
-    st.write("## Select Age Group")
+with right_col:
+    st.write("## Age Group")
     st.radio(
         "",
         ["🧒 Young", "🧑 Middle Aged", "👴 Aged"],
-        key="age_group",
-        on_change=update_activity
+        key="age_group"
+    )
+
+# ---------------- IMAGE (ONLY AT START) ----------------
+st.divider()
+IMAGE_PATH = "assets/goldenhour.jpg"
+
+if os.path.exists(IMAGE_PATH):
+    st.image(
+        IMAGE_PATH,
+        caption="⏱️ The Golden Hour – Immediate action saves lives",
+        use_column_width=True
     )
 
 st.divider()
@@ -129,19 +135,19 @@ st.divider()
 # ---------------- HELPER GUIDELINES ----------------
 if st.session_state.user_role == "👥 I am helping someone else":
     st.markdown("## 🛟 Helper Safety & First-Aid Guidelines")
-    st.info("⚠️ Your safety comes first.")
 
-    c1, c2 = st.columns(2)
-    with c1:
+    col1, col2 = st.columns(2)
+
+    with col1:
         st.markdown("### 🧍‍♂️ Scene Safety")
         st.markdown("✅ Ensure the area is safe")
         st.markdown("🚫 Do NOT move the patient unnecessarily")
 
-    with c2:
+    with col2:
         st.markdown("### 🩺 Patient Check")
         st.markdown("🫁 Check breathing & responsiveness")
         st.markdown("🩸 Apply firm pressure if bleeding")
-        st.markdown("❤️ **CPR Video:** [Watch Here](https://youtu.be/2PngCv7NjaI)")
+        st.markdown("❤️ **Learn CPR:** [Watch CPR Video](https://youtu.be/2PngCv7NjaI)")
 
     st.markdown(
         """
@@ -211,12 +217,8 @@ if st.session_state.user_role:
             break
 
     st.divider()
-    if severity == "Severe":
-        st.error("🔴 SEVERE EMERGENCY")
-        st.markdown(f"[🧭 Find Trauma Hospitals]({maps_link('severe')})")
-    else:
-        st.warning("🟠 MEDICAL ATTENTION ADVISED")
-        st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
+    st.error("🔴 SEVERE EMERGENCY") if severity == "Severe" else st.warning("🟠 MEDICAL ATTENTION ADVISED")
+    st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link('severe' if severity=='Severe' else 'normal')})")
 
     st.info(explain_severity(st.session_state.all_symptoms, severity))
 
@@ -233,8 +235,7 @@ if st.session_state.user_role:
                 question,
                 st.session_state.all_symptoms,
                 severity,
-                st.session_state.user_role,
-                st.session_state.age_group
+                st.session_state.user_role
             ))
 
 # ---------------- RESET ----------------
