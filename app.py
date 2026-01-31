@@ -58,6 +58,10 @@ st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 
 # ✅ IMAGE (FIXED PATH – NO SPACE)
+import os
+st.write("Files in root:", os.listdir("."))
+st.write("Files in assets:", os.listdir("assets") if os.path.exists("assets") else "assets folder NOT FOUND")
+
 st.image("assets/golden_hour.png", use_column_width=True)
 
 st.divider()
