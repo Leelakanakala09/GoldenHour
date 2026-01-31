@@ -174,6 +174,17 @@ if st.session_state.user_role:
     else:
         st.warning("🟠 MEDICAL ATTENTION ADVISED")
         st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link()})")
+        # ---------------- START NEW EMERGENCY ----------------
+st.divider()
+
+if st.button("🔄 Start New Emergency"):
+    st.session_state.all_symptoms = []
+    st.session_state.ui_selected = []
+    st.session_state.voice_text = ""
+    st.session_state.user_role = None
+    st.session_state.reset_trigger = False
+    st.rerun()
+
 # ---------------- SAFE IMAGE LOAD ----------------
 IMAGE_PATH = "assets/goldenhour.png"
 
