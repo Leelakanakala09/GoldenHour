@@ -185,7 +185,9 @@ if st.session_state.user_role:
 
 # ---------------- FOOTER IMAGE ----------------
 st.divider()
-IMAGE_PATH = "goldenhour.png"
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+IMAGE_PATH = os.path.join(BASE_DIR, "goldenhour.png")
 
 if os.path.exists(IMAGE_PATH):
     st.image(
@@ -193,3 +195,5 @@ if os.path.exists(IMAGE_PATH):
         caption="⏱️ The Golden Hour – Immediate action saves lives",
         width=900
     )
+else:
+    st.warning("⚠️ goldenhour.png not found at: " + IMAGE_PATH)
