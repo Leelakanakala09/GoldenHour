@@ -7,15 +7,16 @@ from emergency_data import classify_severity
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(page_title="Golden Hour", layout="wide")
 
-# ---------------- INIT SESSION STATE ----------------
-def init_state():
+# ---------------- INIT STATE ----------------
+def init():
     defaults = {
-        "all_options": [
+        "options": [
             "Road Accident", "Heavy Bleeding", "Chest Pain",
             "Breathing Problem", "Burn Injury", "Fever",
             "Headache", "Stomach Ache", "Dizziness"
         ],
-        "selected_problems": [],
+        "ui_selected": [],
+        "all_symptoms": [],
         "typed_text": "",
         "voice_text": ""
     }
@@ -23,116 +24,108 @@ def init_state():
         if k not in st.session_state:
             st.session_state[k] = v
 
-init_state()
+init()
 
 # ---------------- HELPERS ----------------
-def split_problems(text):
-    text = text.lower()
+def split_text(text):
     for sep in [",", "&", " and "]:
         text = text.replace(sep, "|")
-    return [p.strip().title() for p in text.split("|") if p.strip()]
+    return [t.strip().title() for t in text.split("|") if t.strip()]
 
-def add_problems(problem_list):
-    for p in problem_list:
-        if p not in st.session_state.all_options:
-            st.session_state.all_options.append(p)
-        if p not in st.session_state.selected_problems:
-            st.session_state.selected_problems.append(p)
+def add_symptoms(items):
+    for s in items:
+        if s not in st.session_state.options:
+            st.session_state.options.append(s)
+        if s not in st.session_state.all_symptoms:
+            st.session_state.all_symptoms.append(s)
 
 # ---------------- HEADER ----------------
 st.title("🚨 Golden Hour")
 st.subheader("AI Emergency Decision Assistant")
 st.divider()
 
-# ---------------- LAYOUT ----------------
 main, side = st.columns([3, 1])
 
 # ================= MAIN =================
 with main:
 
-    # -------- SELECT --------
-    st.write("### Select all that apply")
+    # -------- MULTISELECT --------
+    st.write("### Select symptoms")
     st.multiselect(
         "",
-        st.session_state.all_options,
-        key="selected_problems"
+        st.session_state.options,
+        key="ui_selected"
     )
 
-    # -------- TEXT INPUT --------
-    st.write("### ➕ Add your problem (type multiple)")
-    col1, col2 = st.columns([3, 1])
+    if st.session_state.ui_selected:
+        add_symptoms(st.session_state.ui_selected)
 
-    with col1:
+    # -------- TEXT INPUT --------
+    st.write("### ➕ Add via text")
+    c1, c2 = st.columns([3, 1])
+
+    with c1:
         st.text_input(
             "",
             placeholder="fever, headache and dizziness",
             key="typed_text"
         )
 
-    with col2:
+    with c2:
         if st.button("Add Text"):
-            problems = split_problems(st.session_state.typed_text)
-            add_problems(problems)
+            add_symptoms(split_text(st.session_state.typed_text))
             st.session_state["typed_text"] = ""
             st.rerun()
 
     # -------- VOICE INPUT --------
     st.divider()
-    st.write("### 🎙️ Describe the problem using voice")
+    st.write("### 🎙️ Add via voice")
 
-    audio_bytes = audio_recorder("Click to record")
+    audio = audio_recorder("Click to record")
 
-    if audio_bytes:
+    if audio:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-            f.write(audio_bytes)
-            audio_path = f.name
+            f.write(audio)
+            path = f.name
 
         r = sr.Recognizer()
         try:
-            with sr.AudioFile(audio_path) as src:
-                audio = r.record(src)
-            st.session_state["voice_text"] = r.recognize_google(audio)
-        except sr.UnknownValueError:
-            st.error("Could not understand the voice")
-        except Exception:
-            st.error("Voice recognition failed")
+            with sr.AudioFile(path) as src:
+                data = r.record(src)
+            st.session_state["voice_text"] = r.recognize_google(data)
+        except:
+            st.error("Could not recognize voice")
         finally:
-            os.remove(audio_path)
+            os.remove(path)
 
-    # -------- VOICE TEXT BOX --------
-    col3, col4 = st.columns([3, 1])
+    c3, c4 = st.columns([3, 1])
 
-    with col3:
-        st.text_input(
-            "📝 Recognized Voice",
-            key="voice_text",
-            placeholder="Voice input appears here"
-        )
+    with c3:
+        st.text_input("Recognized voice", key="voice_text")
 
-    with col4:
+    with c4:
         if st.button("Add Voice"):
-            problems = split_problems(st.session_state.voice_text)
-            add_problems(problems)
+            add_symptoms(split_text(st.session_state.voice_text))
             st.session_state["voice_text"] = ""
             st.rerun()
 
 # ================= SIDEBAR =================
 with side:
-    st.write("### 📋 All Added Problems")
-    if st.session_state.selected_problems:
-        for p in st.session_state.selected_problems:
-            st.success(p)
+    st.write("### 📋 All Added Symptoms")
+    if st.session_state.all_symptoms:
+        for s in st.session_state.all_symptoms:
+            st.success(s)
     else:
-        st.info("No problems added yet")
+        st.info("No symptoms added yet")
 
 # ---------------- SEVERITY ----------------
-if not st.session_state.selected_problems:
-    st.warning("Please add at least one problem.")
+if not st.session_state.all_symptoms:
+    st.warning("Add at least one symptom.")
     st.stop()
 
 severity = "Urgent"
-for p in st.session_state.selected_problems:
-    if classify_severity(p) == "Severe":
+for s in st.session_state.all_symptoms:
+    if classify_severity(s) == "Severe":
         severity = "Severe"
         break
 
@@ -142,13 +135,9 @@ def maps_link(level):
 
 st.divider()
 
-# ---------------- RESULT ----------------
 if severity == "Severe":
     st.error("🔴 SEVERE EMERGENCY")
-    st.write("📞 Call emergency services immediately")
-    st.write("🩸 Provide basic first aid")
     st.markdown(f"[🧭 Find Trauma Hospitals]({maps_link(severity)})")
-
 else:
     st.warning("🟠 URGENT MEDICAL ATTENTION NEEDED")
     st.markdown(f"[🧭 Find Nearby Hospitals]({maps_link(severity)})")
